@@ -1,6 +1,6 @@
-/* ArDOs   v1.064
+/* ArDOs   v1.07
 ***Дозиметр на Ардуино
-***IDE Arduino 1.8.2
+***IDE Arduino 1.8.5
   ветка форума arduino.ru/forum/proekty/delaem-dozimetr
   сайт srukami.inf.ua/ardos.html
 */
@@ -10,16 +10,15 @@
 
 //настройки /////////////начало
 LCD5110 myGLCD(A1, A0, 12, 10, 11); //подключение дисплея
-//LCD5110 myGLCD(12, 11, 10, A4, A5); //подключение дисплея
 #define contrast 60 //контрастность дисплея
 //#define buzzer_active //если используется активный бузер (со встроенным генератором), управляемый транзистором с выхода 6, то раскомментировать эту строчку, если пассивный (с усилителем или без) - оставить закомментированой.
-//#define UNO // если используется ArduinoUNO или плата на голой атмеге328 в корпусе DIP - раскомментируйте данную строчку. Это переключит чтение напряжения с делителя с ноги A6 на ногу A5.
+//#define UNO_DIP // если используется ArduinoUNO или плата на голой атмеге328 в корпусе DIP - раскомментируйте данную строчку. Это переключит чтение напряжения с делителя с ноги A6 на ногу A5.
 #define first_alarm_duration 7000 //длительность сигнала тревоги при превышении первого аварийного порога в миллисекундах
 byte treviga_1 = 30; //первая ступень тревоги
 byte treviga_2 = 60; //вторая ступень тревоги
 byte del_BUZZ = 7;//длительность одиночного сигнала
-#define  ADC_value 155  //значение АЦП при котором 400В с учетом вашего делителя напряжения (0..255). Для значений делителя с сайта srukami ADC 163. (Тестовая версия tekagi  67)
-#define k_delitel 640 //коефициент делителя напряжения, зависит от вашего делителя. Для значений делителя с сайта srukami k_delitel 576. (Тестовая версия tekagi  1395)
+#define  ADC_value 163  //значение АЦП при котором 400В с учетом вашего делителя напряжения (0..255). Для значений делителя с сайта srukami ADC 163. (Тестовая версия tekagi  67)
+#define k_delitel 576 //коефициент делителя напряжения, зависит от вашего делителя. Для значений делителя с сайта srukami k_delitel 576. (Тестовая версия tekagi  1395)
 byte puls = 2; //тонкая настройка длинны импульса высоковольтного транса
 byte scrin_GRAF = 1; //скорость построения графика в секундах
 byte ind_ON = 1;  //0 - индикация выключена, 1 - включён бузер, 2 - светодиод, 3 - и бузер, и светодиод
@@ -32,7 +31,9 @@ float opornoe = 1.10; //делить на opornoe/10
 byte beta_time = 5; //время замера бета излучения
 //настройки //////////////конец
 //служебные переменные
-extern uint8_t SmallFont[], MediumNumbers[], TinyFont[];
+extern uint8_t rus_font_6x8[], MediumNumbers[], TinyFont[];
+#define maxString 21 // для работы функции преобразования кодировки utf8us
+char target[maxString + 1] = ""; // для работы функции преобразования кодировки utf8us
 extern uint8_t logo_bat[], logo_rag[], logo_tr[], gif_chast_1[], gif_chast_2[];
 volatile int shet = 0;
 unsigned long t_milis = 0, gr_milis = 0, lcd_milis = 0, toch_milis = 0, timer_mil = 0;
@@ -294,8 +295,8 @@ if (menu == 0)  // в меню по удержанию кнопки "ок" вх�
         doz_v = 0;//сброс накопленной дозы
         eeprom_wrD ();
         myGLCD.clrScr();
-        myGLCD.setFont(SmallFont);
-        myGLCD.print("SBROS OK", CENTER, 24);
+        myGLCD.setFont(rus_font_6x8);
+        myGLCD.print(utf8rus("СБРОС OK"), CENTER, 24);
         myGLCD.update();
         _delay_ms(1000);
       }
@@ -383,8 +384,8 @@ if (menu == 0)  // в меню по удержанию кнопки "ок" вх�
         doz_v = 0;//сброс накопленной дозы
         eeprom_wrD ();
         myGLCD.clrScr();
-        myGLCD.setFont(SmallFont);
-        myGLCD.print("SBROS OK", CENTER, 24);
+        myGLCD.setFont(rus_font_6x8);
+        myGLCD.print(utf8rus("СБРОС OK"), CENTER, 24);
         myGLCD.update();
         _delay_ms(1000);
       }
@@ -420,23 +421,23 @@ void gif_nabor() {
   } else {
     myGLCD.drawBitmap(gif_x, 27, gif_chast_2, 8, 8);
   }
-  myGLCD.setFont(SmallFont);
+  myGLCD.setFont(rus_font_6x8);
   if (zam_180p < 200) {
     gif_x = gif_x + 1;
     if (gif_x >= 83 - zam_180p * 0.47) {
       gif_x = 0;
     }
-    myGLCD.print("ANALIZ", CENTER, 40);
+    myGLCD.print(utf8rus("АНАЛИЗ"), CENTER, 40);
   }
   else if (zam_180p >= 200) {
-    myGLCD.print("OBNOVLENIE", CENTER, 40);
+    myGLCD.print(utf8rus("ОБНОВЛЕНИЕ"), CENTER, 40);
   }
 }
 //--------------------------------------------------------------
 void zamer_200s() 
 {
   myGLCD.clrScr();
-  myGLCD.setFont(SmallFont);
+  myGLCD.setFont(rus_font_6x8);
   myGLCD.print("%", 20, 0); myGLCD.printNumF(stat_percent, 1, 26, 0);
   myGLCD.setFont(MediumNumbers);
       if (alarm_sound)  //сбрасываем сигнал тревоги первого уровня, если активен
@@ -445,12 +446,20 @@ void zamer_200s()
     }
   if (fon > 0) {
     if (fon >= 1000) {
-      myGLCD.printNumF((float(fon)/1000), 2, LEFT, 7);
-        myGLCD.setFont(SmallFont); myGLCD.print("mR/h", RIGHT, 12);
+    myGLCD.printNumF((float(fon)/1000), 2, LEFT, 7);
+        myGLCD.setFont(rus_font_6x8); myGLCD.print(utf8rus("мР/ч"), RIGHT, 12);
     }
-    if (fon < 1000) {
+    if (fon < 1000) 
+  {
+    if (fon < 100)
+      {
       myGLCD.printNumI(fon, CENTER, 7);
-      myGLCD.setFont(SmallFont); myGLCD.print("uR/h", RIGHT, 12);
+      }
+    else
+      {
+      myGLCD.printNumI(fon, LEFT, 7); 
+      }
+      myGLCD.setFont(rus_font_6x8); myGLCD.print(utf8rus("мкР/ч"), RIGHT, 12);
     }
   }
 
@@ -506,7 +515,7 @@ void lcd_poisk() {//вывод на дисплей режима поиск
     tr = 1;
   }
   myGLCD.clrScr();
-  myGLCD.setFont(SmallFont);
+  myGLCD.setFont(rus_font_6x8);
   if (tr == 1) { //опасно
     myGLCD.drawBitmap(0, 0, logo_tr, 24, 8);
   }
@@ -515,22 +524,38 @@ void lcd_poisk() {//вывод на дисплей режима поиск
   if (fon > 0) {
     if (fon >= 1000) {
       myGLCD.printNumF((float(fon)/1000), 2, LEFT, 7);
-        myGLCD.setFont(SmallFont); myGLCD.print("mR/h", RIGHT, 12);
+        myGLCD.setFont(rus_font_6x8); myGLCD.print(utf8rus("мР/ч"), RIGHT, 12);
     }
-    if (fon < 1000) {
+    if (fon < 1000) 
+    {
+    if (fon < 100)
+      {
       myGLCD.printNumI(fon, CENTER, 7);
-      myGLCD.setFont(SmallFont); myGLCD.print("uR/h", RIGHT, 12);
+      }
+    else
+      {
+      myGLCD.printNumI(fon, LEFT, 7); 
+      }
+      myGLCD.setFont(rus_font_6x8); myGLCD.print(utf8rus("мкР/ч"), RIGHT, 12);
     }
   }
   time_d ();
   myGLCD.setFont(TinyFont);
   ind_doze_time();  //вывод времени накопления дозы на дисплей    
-  myGLCD.setFont(SmallFont);
+  myGLCD.setFont(rus_font_6x8);
   if (doz_v < 1000) {
-    myGLCD.printNumF(doz_v, 1, 41, 24); myGLCD.print("uR", RIGHT, 24);
+  if (doz_v < 100)
+  {
+  myGLCD.printNumF(doz_v, 1, 41, 24); myGLCD.print(utf8rus("мкР"), RIGHT, 24);
+  }
+  else
+  {
+  myGLCD.printNumF(doz_v, 1, 34, 24); myGLCD.print(utf8rus("мкР"), RIGHT, 24);
+  }
+    
   }
   if (doz_v >= 1000) {
-    myGLCD.printNumF(doz_v / 1000.0, 2, 41, 24); myGLCD.print("mR", RIGHT, 24);
+    myGLCD.printNumF(doz_v / 1000.0, 2, 41, 24); myGLCD.print(utf8rus("мР"), RIGHT, 24);
   }
   myGLCD.drawLine(0, 32, 83, 32);//верхняя
   battery();
@@ -620,9 +645,9 @@ void zamer_beta() {// замер бета или продуктов
        res_first_alarm(); //сбрасываем сигнал тревоги
     }
     myGLCD.clrScr();
-    myGLCD.setFont(SmallFont);
-    myGLCD.print("Zamer ", 20, 10); myGLCD.printNumI(bet_z, 55, 10);
-    myGLCD.print("nagmi OK", CENTER, 20);
+    myGLCD.setFont(rus_font_6x8);
+    myGLCD.print(utf8rus("Замер "), 20, 10); myGLCD.printNumI(bet_z, 55, 10);
+    myGLCD.print(utf8rus("нажми OK"), CENTER, 20);
     myGLCD.update();
   }  
   if (gotovo == 1) {
@@ -642,18 +667,18 @@ void zamer_beta() {// замер бета или продуктов
     }
     myGLCD.printNumI(sek, 10 + otsup, 0); myGLCD.print("time", 23 + otsup, 0);
     myGLCD.drawLine(0, 8, 83, 8);
-    myGLCD.setFont(SmallFont);
+    myGLCD.setFont(rus_font_6x8);
     myGLCD.drawLine(40, 8, 40, 28);
-    myGLCD.print("Zamer0", LEFT, 10); myGLCD.print("Zamer1", RIGHT, 10);
+    myGLCD.print(utf8rus("Замер0"), LEFT, 10); myGLCD.print(utf8rus("Замер1"), RIGHT, 10);
     myGLCD.printNumI(bet_z0, LEFT, 20); myGLCD.printNumI(bet_z1, RIGHT, 20);
     myGLCD.drawLine(0, 28, 83, 28);
     if (bet_z < 2) {
-      myGLCD.print("Idet zamer", CENTER, 30); myGLCD.printNumI(bet_z, RIGHT, 30);
+      myGLCD.print(utf8rus("Идёт замер"), CENTER, 30); myGLCD.printNumI(bet_z, RIGHT, 30);
       myGLCD.printNumI(bet_r, CENTER, 38);
     }
     if (bet_z == 2) {
-      myGLCD.print("Rezultat", CENTER, 30);
-      myGLCD.printNumI(bet_r, CENTER, 38); myGLCD.print("mkR/h", RIGHT, 38);
+      myGLCD.print(utf8rus("Результат"), CENTER, 30);
+      myGLCD.printNumI(bet_r, CENTER, 38); myGLCD.print(utf8rus("мкР/ч"), RIGHT, 38);
     }
     myGLCD.update();
     if (bet_z == 0) { //первый замер
@@ -833,7 +858,7 @@ void generator() {//накачка по обратной связи с АЦП
 //--------------------------------------------------------------------------------------------------
 byte Read_HV () {
   ADCSRA = 0b11100111;
-  #ifdef UNO //если при компилляции выбрана плата ArduinoUNO
+  #ifdef UNO_DIP //если при компилляции выбрана плата ArduinoUNO
   ADMUX = 0b11100101;//выбор внутреннего опорного 1,1В и А5 
   #else // если используется промини, нано или голый камень в tqfp
   ADMUX = 0b11100110;//выбор внутреннего опорного 1,1В и А6
@@ -878,9 +903,9 @@ void lcd_init() {
   myGLCD.setContrast(contrast);
   myGLCD.clrScr();
   myGLCD.drawBitmap(0, 0, logo_rag, 84, 48);
-  myGLCD.setFont(SmallFont);
-  myGLCD.print("Arduino+", CENTER, 32);
-  myGLCD.print("Dosimeter v1.064", CENTER, 40);
+  myGLCD.setFont(rus_font_6x8);
+  myGLCD.print(utf8rus("Ардуино+"), CENTER, 32);
+  myGLCD.print(utf8rus("Дозиметр v1.07"), CENTER, 40);
   myGLCD.update();
   _delay_ms(1000);
 }
@@ -897,8 +922,8 @@ void eeprom_wrS () { //запись настроек в память
   EEPROM.write(8, treviga_2);
   EEPROM.write(17, beta_time);
   myGLCD.clrScr();
-  myGLCD.setFont(SmallFont);
-  myGLCD.print("Save OK", CENTER, 24);
+  myGLCD.setFont(rus_font_6x8);
+  myGLCD.print(utf8rus("Сохранено"), CENTER, 24);
   myGLCD.update();
   _delay_ms(1000);
 }
@@ -908,12 +933,12 @@ void eeprom_wrD () { //запись настроек в память время 
   EEPROM.put(13, doz_v);   
 }
 //-----------------------------------------------------------------------------------------------------
-void eeprom_readD () { //чтание настроек из памяти время накопления дозы
+void eeprom_readD () { //чтение настроек из памяти время накопления дозы
   EEPROM.get(9, time_doza);
   EEPROM.get(13, doz_v);   
 }
 //-----------------------------------------------------------------------------------------------------
-void eeprom_readS () { //чтание настроек из памяти
+void eeprom_readS () { //чтение настроек из памяти
   if (EEPROM.read(0) == 222) {
     treviga_1 = EEPROM.read(1);
     podsvetka = EEPROM.read(2);
@@ -991,6 +1016,7 @@ void res_first_alarm() //подпрограмма выключения трев�
 //------------------------------------------------------------------------------------------------------
 void ind_doze_time() //вывод времени накопления дозы на дисплей
 {
+  myGLCD.setFont(TinyFont);
   if (MONTH) // если есть месяцы
   {
   myGLCD.printNumI(MONTH, 0, 26);
@@ -1132,8 +1158,40 @@ if (PIND & (1 << PIND7)) {val_kl = 0;} // если добрались до эт�
 if (PIND & (1 << PIND3)) {val_ok = 0;} // если добрались до этой точки и кнопка не нажата - обнуляем счётчик (защита от появления "pressed" после "holded")
 return 0; // если ни одна из кнопок не была нажата - возвращаем 0
 }
+//------------------------------------------------------------------------------------------------------------------------------
+char *utf8rus(char *source) // функция преобразования utf8 для вывода кириллицы (by arduinec)
+{
+  int i,j,k;
+  unsigned char n;
+  char m[2] = { '0', '\0' };
 
+  strcpy(target, ""); k = strlen(source); i = j = 0;
 
+  while (i < k) {
+    n = source[i]; i++;
+
+    if (n >= 0xC0) {
+      switch (n) {
+        case 0xD0: {
+          n = source[i]; i++;
+          if (n == 0x81) { n = 0xA8; break; }
+          if (n >= 0x90 && n <= 0xBF) n = n + 0x30;
+          break;
+        }
+        case 0xD1: {
+          n = source[i]; i++;
+          if (n == 0x91) { n = 0xB8; break; }
+          if (n >= 0x80 && n <= 0x8F) n = n + 0x70;
+          break;
+        }
+      }
+    }
+
+    m[0] = n; strcat(target, m);
+    j++; if (j >= maxString) break;
+  }
+  return target;
+}
 
 // ________________ конец скетча, дальше можно не копировать _____________________
 
@@ -1144,11 +1202,15 @@ return 0; // если ни одна из кнопок не была нажата
 
 ChangeLog by tekagi:
 
-1.064         16.04.2018
+1.07          16.04.2018
+  -начато добавление русского языка в интерфейсе. Спасибо kaktuc за русский шрифт к библиотеке и arduinec за функцию перекодирования выводимого на дисплей текста.
+  -заменён дефайн "ADC" на "ADC_value", в новых версиях ArduinoIDE из-за этого возникала ошибка компилляции
+
+1.064         15.04.2018
   -добавлена возможность использования ArduinoUNO или голого камня atmega328p в DIP корпусе. Для переключения раскомментировать #define UNO в начале скетча, это переключит чтение высокого напряжения с делителя с пина A6 на A5;
   -добавлено переключение состояния подсветки при удержании ">>"
   
-1.063.7       16.04.2018
+1.063.7       15.04.2018
   -попытка переписать обработку клавиш (вынесено в отдельную функцию);
   -выключен выход в системное меню из функций длительного и разностного замеров (оставлен только из основного режима "поиск");
 
