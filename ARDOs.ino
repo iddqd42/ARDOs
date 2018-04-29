@@ -1,4 +1,4 @@
-/* ArDOs   v1.07
+/* ArDOs   v1.07.3
 ***Дозиметр на Ардуино
 ***IDE Arduino 1.8.5
   ветка форума arduino.ru/forum/proekty/delaem-dozimetr
@@ -31,10 +31,10 @@ float opornoe = 1.10; //делить на opornoe/10
 byte beta_time = 5; //время замера бета излучения
 //настройки //////////////конец
 //служебные переменные
-extern uint8_t rus_font_6x8[], MediumNumbers[], TinyFont[];
+extern uint8_t SmallFontRus[], MediumNumbers[], TinyFontRus[];
 #define maxString 21 // для работы функции преобразования кодировки utf8us
 char target[maxString + 1] = ""; // для работы функции преобразования кодировки utf8us
-extern uint8_t logo_bat[], logo_rag[], logo_tr[], gif_chast_1[], gif_chast_2[];
+extern uint8_t logo_bat[], logo_rag[], logo_tr[], gif_chast_1[], gif_chast_2[], beta_prev_1[], beta_prev_2[];
 volatile int shet = 0;
 unsigned long t_milis = 0, gr_milis = 0, lcd_milis = 0, toch_milis = 0, timer_mil = 0;
 unsigned long alarm_milis = 0; //для отсчёта длительности сигнала тревоги по превышению порога
@@ -295,8 +295,9 @@ if (menu == 0)  // в меню по удержанию кнопки "ок" вх�
         doz_v = 0;//сброс накопленной дозы
         eeprom_wrD ();
         myGLCD.clrScr();
-        myGLCD.setFont(rus_font_6x8);
-        myGLCD.print(utf8rus("СБРОС OK"), CENTER, 24);
+        myGLCD.setFont(SmallFontRus);
+    myGLCD.print(utf8rus("ДОЗА И ВРЕМЯ"), CENTER, 16);
+        myGLCD.print(utf8rus("ОБНУЛЕНЫ"), CENTER, 24);
         myGLCD.update();
         _delay_ms(1000);
       }
@@ -384,8 +385,9 @@ if (menu == 0)  // в меню по удержанию кнопки "ок" вх�
         doz_v = 0;//сброс накопленной дозы
         eeprom_wrD ();
         myGLCD.clrScr();
-        myGLCD.setFont(rus_font_6x8);
-        myGLCD.print(utf8rus("СБРОС OK"), CENTER, 24);
+        myGLCD.setFont(SmallFontRus);
+    myGLCD.print(utf8rus("ДОЗА И ВРЕМЯ"), CENTER, 16);
+        myGLCD.print(utf8rus("ОБНУЛЕНЫ"), CENTER, 24);
         myGLCD.update();
         _delay_ms(1000);
       }
@@ -421,7 +423,7 @@ void gif_nabor() {
   } else {
     myGLCD.drawBitmap(gif_x, 27, gif_chast_2, 8, 8);
   }
-  myGLCD.setFont(rus_font_6x8);
+  myGLCD.setFont(SmallFontRus);
   if (zam_180p < 200) {
     gif_x = gif_x + 1;
     if (gif_x >= 83 - zam_180p * 0.47) {
@@ -437,7 +439,7 @@ void gif_nabor() {
 void zamer_200s() 
 {
   myGLCD.clrScr();
-  myGLCD.setFont(rus_font_6x8);
+  myGLCD.setFont(SmallFontRus);
   myGLCD.print("%", 20, 0); myGLCD.printNumF(stat_percent, 1, 26, 0);
   myGLCD.setFont(MediumNumbers);
       if (alarm_sound)  //сбрасываем сигнал тревоги первого уровня, если активен
@@ -447,7 +449,7 @@ void zamer_200s()
   if (fon > 0) {
     if (fon >= 1000) {
     myGLCD.printNumF((float(fon)/1000), 2, LEFT, 7);
-        myGLCD.setFont(rus_font_6x8); myGLCD.print(utf8rus("мР/ч"), RIGHT, 12);
+        myGLCD.setFont(SmallFontRus); myGLCD.print(utf8rus("мР/ч"), RIGHT, 12);
     }
     if (fon < 1000) 
   {
@@ -459,7 +461,7 @@ void zamer_200s()
       {
       myGLCD.printNumI(fon, LEFT, 7); 
       }
-      myGLCD.setFont(rus_font_6x8); myGLCD.print(utf8rus("мкР/ч"), RIGHT, 12);
+      myGLCD.setFont(SmallFontRus); myGLCD.print(utf8rus("мкР/ч"), RIGHT, 12);
     }
   }
 
@@ -515,7 +517,7 @@ void lcd_poisk() {//вывод на дисплей режима поиск
     tr = 1;
   }
   myGLCD.clrScr();
-  myGLCD.setFont(rus_font_6x8);
+  myGLCD.setFont(SmallFontRus);
   if (tr == 1) { //опасно
     myGLCD.drawBitmap(0, 0, logo_tr, 24, 8);
   }
@@ -524,7 +526,7 @@ void lcd_poisk() {//вывод на дисплей режима поиск
   if (fon > 0) {
     if (fon >= 1000) {
       myGLCD.printNumF((float(fon)/1000), 2, LEFT, 7);
-        myGLCD.setFont(rus_font_6x8); myGLCD.print(utf8rus("мР/ч"), RIGHT, 12);
+        myGLCD.setFont(SmallFontRus); myGLCD.print(utf8rus("мР/ч"), RIGHT, 12);
     }
     if (fon < 1000) 
     {
@@ -536,13 +538,13 @@ void lcd_poisk() {//вывод на дисплей режима поиск
       {
       myGLCD.printNumI(fon, LEFT, 7); 
       }
-      myGLCD.setFont(rus_font_6x8); myGLCD.print(utf8rus("мкР/ч"), RIGHT, 12);
+      myGLCD.setFont(SmallFontRus); myGLCD.print(utf8rus("мкР/ч"), RIGHT, 12);
     }
   }
   time_d ();
-  myGLCD.setFont(TinyFont);
+  myGLCD.setFont(TinyFontRus);
   ind_doze_time();  //вывод времени накопления дозы на дисплей    
-  myGLCD.setFont(rus_font_6x8);
+  myGLCD.setFont(SmallFontRus);
   if (doz_v < 1000) {
   if (doz_v < 100)
   {
@@ -574,33 +576,35 @@ void lcd_poisk() {//вывод на дисплей режима поиск
 //-------------------------------------------------------------------------------------------------------
 void lcd_menu() { //вывод на дисплей меню
   myGLCD.clrScr();
-  myGLCD.setFont(TinyFont);
-  myGLCD.print("OPASN.1", 0, 0); myGLCD.printNumI(treviga_1, CENTER, 0); myGLCD.print("uR/h", RIGHT, 0);
-  myGLCD.print("OPASN.2", 0, 6); myGLCD.printNumI(treviga_2, CENTER, 6); myGLCD.print("uR/h", RIGHT, 6);
-  myGLCD.print("PODSV.", 0, 12); myGLCD.printNumI(podsvetka, CENTER, 12);
-  myGLCD.print("------", 0, 18); myGLCD.printNumI(son_OK, CENTER, 18); myGLCD.print("on/off", RIGHT, 18);//usr
-  myGLCD.print("POISK.", 0, 24); myGLCD.printNumI(scrin_GRAF, CENTER, 24);
-  myGLCD.print("BUZ/LED", 0, 30); //пункт меню выбора индикации частиц
+  myGLCD.setFont(TinyFontRus);
+  myGLCD.print(utf8rus("ПОРОГ 1"), 5, 0); myGLCD.printNumI(treviga_1, 55, 0); myGLCD.print("\xBC\xBD\xBE\xBF", RIGHT, 0);
+  myGLCD.print(utf8rus("ПОРОГ 2"), 5, 6); myGLCD.printNumI(treviga_2, 55, 6); myGLCD.print("\xBC\xBD\xBE\xBF", RIGHT, 6);
+  myGLCD.print(utf8rus("ПОДСВЕТКА"), 5, 12); 
+  if (podsvetka)  { myGLCD.print(utf8rus("ВКЛ."), RIGHT, 12); }
+  else  { myGLCD.print(utf8rus("ВЫКЛ."), RIGHT, 12);  }
+  myGLCD.print("----------", 5, 18); /* myGLCD.printNumI(son_OK, CENTER, 18); */ myGLCD.print("-----------", RIGHT, 18);//usr
+  myGLCD.print(utf8rus("ОБН. ГРАФИКА"), 5, 24); myGLCD.printNumI(scrin_GRAF, 59, 24); myGLCD.print(utf8rus("СЕК."), RIGHT, 24);//
+  myGLCD.print(utf8rus("ИНДИКАЦИЯ"), 5, 30); //пункт меню выбора индикации частиц
   switch (ind_ON)
   {
   case 0:
-    myGLCD.print("off/off", RIGHT, 30); //индикация выключена
+    myGLCD.print(utf8rus("ВЫКЛ."), RIGHT, 30); //индикация выключена
     break;  
   case 1:
-    myGLCD.print("on/off", RIGHT, 30); //индикация звуком
+    myGLCD.print(utf8rus("ЗВУК"), RIGHT, 30); //индикация звуком
     break;  
   case 2:
-    myGLCD.print("off/on", RIGHT, 30); //индикация светом
+    myGLCD.print(utf8rus("СВЕТ"), RIGHT, 30); //индикация светом
     break;  
   case 3:
-    myGLCD.print("on/on", RIGHT, 30); //индикация звуком и светом
+    myGLCD.print(utf8rus("ЗВУК+СВЕТ"), RIGHT, 30); //индикация звуком и светом
     break; 
     default:
     myGLCD.print("err", RIGHT, 30); //  если значение не равно 1,2,3 или 0 - выводим ошибку 
   } 
-  myGLCD.print("OUT", 0, 36);
-  myGLCD.print("SAVE", 0, 42);
-  myGLCD.print(">", 30, n_menu * 6);
+  myGLCD.print(utf8rus("ВЫХОД"), 5, 36);
+  myGLCD.print(utf8rus("СОХРАНИТЬ"), 5, 42);
+  myGLCD.print(">", 0, n_menu * 6);
   myGLCD.update();
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -608,16 +612,16 @@ void lcd_sys() { //вывод на дисплей меню
   VCC_read();
   speed_nakachka ();//скорость накачки имлульсы/сек
   myGLCD.clrScr();
-  myGLCD.setFont(TinyFont);
-  myGLCD.print("OPORN", 0, 0); myGLCD.printNumF(opornoe, 2, CENTER, 0); myGLCD.print("VCC", 55, 0); myGLCD.printNumF(VCC, 2, RIGHT, 0);
+  myGLCD.setFont(TinyFontRus);
+  myGLCD.print(utf8rus("ОПОРН."), 5, 0); myGLCD.printNumF(opornoe, 2, CENTER, 0); myGLCD.print("VCC", 55, 0); myGLCD.printNumF(VCC, 2, RIGHT, 0);
   hv_400 = hv_adc * opornoe * k_delitel / 255; //считем высокео перед выводом
-  myGLCD.print("NAKAH", 0, 6); myGLCD.printNumI(puls, CENTER, 6); myGLCD.printNumI(hv_400, RIGHT, 6);
-  myGLCD.print("DOZA", 0, 12); myGLCD.print(">>", CENTER, 12); myGLCD.print("SBROS", RIGHT, 12);
-  myGLCD.print("OUT", 0, 18);
-  myGLCD.print("SAVE", 0, 24);
-  myGLCD.print("BETA", 0, 30); myGLCD.printNumI(beta_time, CENTER, 30); myGLCD.print("MIN", RIGHT, 30);
-  myGLCD.print(">", 30, sys_menu * 6);
-  myGLCD.print("SPEED N", 0, 40); myGLCD.printNumI(speed_nak, CENTER, 40); myGLCD.print("imp/sek", RIGHT, 40);
+  myGLCD.print(utf8rus("НАКАЧКА"), 5, 6); myGLCD.printNumI(puls, 55, 6); myGLCD.printNumI(hv_400, RIGHT, 6);
+  myGLCD.print(utf8rus("СБРОС ДОЗЫ"), 5, 12); /*myGLCD.print(">>", CENTER, 12); myGLCD.print("SBROS", RIGHT, 12);*/
+  myGLCD.print(utf8rus("ВЫХОД"), 5, 18);
+  myGLCD.print(utf8rus("СОХРАНИТЬ"), 5, 24);
+  myGLCD.print(utf8rus("БЕТА"), 5, 30); myGLCD.printNumI(beta_time, 55, 30); myGLCD.print(utf8rus("МИН."), RIGHT, 30);
+  myGLCD.print(">", 0, sys_menu * 6);
+  myGLCD.print(utf8rus("СКОРОСТЬ"), 5, 40); myGLCD.printNumI(speed_nak, 40, 40); myGLCD.print(utf8rus("ИМП/СЕК"), RIGHT, 40);
   myGLCD.update();
 }
 //---------------------------------------------------------------------------------------------------------------------
@@ -645,9 +649,35 @@ void zamer_beta() {// замер бета или продуктов
        res_first_alarm(); //сбрасываем сигнал тревоги
     }
     myGLCD.clrScr();
-    myGLCD.setFont(rus_font_6x8);
-    myGLCD.print(utf8rus("Замер "), 20, 10); myGLCD.printNumI(bet_z, 55, 10);
-    myGLCD.print(utf8rus("нажми OK"), CENTER, 20);
+    myGLCD.setFont(TinyFontRus);
+  if (bet_z == 0)
+  {
+  myGLCD.drawBitmap(0, 0, beta_prev_1, 84, 48);
+  /*
+    myGLCD.print(utf8rus("РЕЖИМ РАЗНОСТНОГО"), CENTER, 0);
+    myGLCD.print(utf8rus("ЗАМЕРА"), CENTER, 8); 
+    myGLCD.drawLine(0, 16, 83, 16); 
+    myGLCD.print(utf8rus("УСТАНОВИТЕ ПРИБОР"), CENTER, 20); 
+    myGLCD.print(utf8rus("НА ПУСТУЮ КЮВЕТУ И"), CENTER, 28);    
+  */
+    
+  }
+  else if (bet_z == 1)
+  {
+  myGLCD.drawBitmap(0, 0, beta_prev_2, 84, 48); 
+  /*
+    myGLCD.print(utf8rus("ЗАМЕР ОБРАЗЦА"), CENTER, 0); 
+    myGLCD.drawLine(0, 8, 83, 8);     
+    myGLCD.print(utf8rus("ЗАПОЛНИТЕ КЮВЕТУ"), CENTER, 12);
+    myGLCD.print(utf8rus("ИЗМЕРЯЕМЫМ ВЕЩЕСТВОМ"), CENTER, 20);  
+    myGLCD.print(utf8rus("УСТАНОВИТЕ ПРИБОР И"), CENTER, 28);
+  */  
+  }
+
+//    myGLCD.setFont(SmallFontRus);
+//    myGLCD.print(utf8rus("Замер "), 20, 10); myGLCD.printNumI(bet_z, 55, 10);
+    myGLCD.setFont(SmallFontRus);
+    myGLCD.print(utf8rus("НАЖМИТЕ OK"), CENTER, 36);
     myGLCD.update();
   }  
   if (gotovo == 1) {
@@ -658,16 +688,16 @@ void zamer_beta() {// замер бета или продуктов
     }
     myGLCD.clrScr();
     battery();
-    myGLCD.setFont(TinyFont);
+    myGLCD.setFont(TinyFontRus);
     myGLCD.printNumI(minute, LEFT, 0);
     if (toch == 0) {
       myGLCD.print(":", 5 + otsup, 0);
     } else {
       myGLCD.print(" ", 5 + otsup, 0);
-    }
-    myGLCD.printNumI(sek, 10 + otsup, 0); myGLCD.print("time", 23 + otsup, 0);
+    } 
+    myGLCD.printNumI(sek, 10 + otsup, 0); myGLCD.print("\xBC"":""\xB9", 23 + otsup, 0);
     myGLCD.drawLine(0, 8, 83, 8);
-    myGLCD.setFont(rus_font_6x8);
+    myGLCD.setFont(SmallFontRus);
     myGLCD.drawLine(40, 8, 40, 28);
     myGLCD.print(utf8rus("Замер0"), LEFT, 10); myGLCD.print(utf8rus("Замер1"), RIGHT, 10);
     myGLCD.printNumI(bet_z0, LEFT, 20); myGLCD.printNumI(bet_z1, RIGHT, 20);
@@ -883,7 +913,7 @@ void battery() { //батарейка
     VCC_read();
   }
   myGLCD.drawBitmap(59, 0, logo_bat, 24, 8);
-  myGLCD.setFont(TinyFont);
+  myGLCD.setFont(TinyFontRus);
   myGLCD.printNumF(VCC, 2, 63, 2);
 }
 //----------------------------------------------------------------------------------------------------
@@ -903,9 +933,9 @@ void lcd_init() {
   myGLCD.setContrast(contrast);
   myGLCD.clrScr();
   myGLCD.drawBitmap(0, 0, logo_rag, 84, 48);
-  myGLCD.setFont(rus_font_6x8);
-  myGLCD.print(utf8rus("Ардуино+"), CENTER, 32);
-  myGLCD.print(utf8rus("Дозиметр v1.07"), CENTER, 40);
+  myGLCD.setFont(SmallFontRus);
+//  myGLCD.print(utf8rus("Ардуино+"), CENTER, 32);
+//  myGLCD.print(utf8rus("Дозиметр v1.07"), CENTER, 40);
   myGLCD.update();
   _delay_ms(1000);
 }
@@ -922,7 +952,7 @@ void eeprom_wrS () { //запись настроек в память
   EEPROM.write(8, treviga_2);
   EEPROM.write(17, beta_time);
   myGLCD.clrScr();
-  myGLCD.setFont(rus_font_6x8);
+  myGLCD.setFont(SmallFontRus);
   myGLCD.print(utf8rus("Сохранено"), CENTER, 24);
   myGLCD.update();
   _delay_ms(1000);
@@ -1016,7 +1046,7 @@ void res_first_alarm() //подпрограмма выключения трев�
 //------------------------------------------------------------------------------------------------------
 void ind_doze_time() //вывод времени накопления дозы на дисплей
 {
-  myGLCD.setFont(TinyFont);
+  myGLCD.setFont(TinyFontRus);
   if (MONTH) // если есть месяцы
   {
   myGLCD.printNumI(MONTH, 0, 26);
@@ -1035,11 +1065,11 @@ void ind_doze_time() //вывод времени накопления дозы �
   myGLCD.printNumI(DAY, 18, 26);
   if (DAY > 9) 
   {
-    myGLCD.print("d", 26, 26);
+    myGLCD.print("\xBB", 26, 26);
   }
   else
   {
-    myGLCD.print("d", 23, 26);
+    myGLCD.print("\xBB", 23, 26);
   } 
   }
   else if (DAY) // если нет месяцев, но есть дни
@@ -1047,20 +1077,20 @@ void ind_doze_time() //вывод времени накопления дозы �
     myGLCD.printNumI(DAY, 0, 26);
     if (DAY > 9) 
     {
-    myGLCD.print("d", 9, 26);
+    myGLCD.print("\xBB", 9, 26);
     }
     else
     {
-    myGLCD.print("d", 5, 26);
+    myGLCD.print("\xBB", 5, 26);
     }
     myGLCD.printNumI(HOUR, 18, 26);
     if (HOUR > 9) 
     {
-    myGLCD.print("h", 26, 26);
+    myGLCD.print("\xBA", 26, 26);
     }
     else 
     {
-    myGLCD.print("h", 23, 26);
+    myGLCD.print("\xBA", 23, 26);
     }
     }
       else // если нет дней
@@ -1068,20 +1098,20 @@ void ind_doze_time() //вывод времени накопления дозы �
       myGLCD.printNumI(HOUR, 0, 26);
       if (HOUR > 9) 
       {
-      myGLCD.print("h", 9, 26);
+      myGLCD.print("\xBA", 9, 26);
       }
       else
       {
-      myGLCD.print("h", 5, 26);
+      myGLCD.print("\xBA", 5, 26);
       }
       myGLCD.printNumI(MIN, 18, 26);
       if (MIN > 9) 
       {
-      myGLCD.print("m", 26, 26);
+      myGLCD.print("\xBC", 26, 26);
       }
       else
       {
-      myGLCD.print("m", 23, 26);
+      myGLCD.print("\xBC", 23, 26);
       }
       }   
 
@@ -1202,9 +1232,15 @@ char *utf8rus(char *source) // функция преобразования utf8 
 
 ChangeLog by tekagi:
 
+1.07.3      28.04.2018
+  -изменено содержание экранов между бета замерами. В промежуточной 1.07.2 сделал на стандартных функциях вывода библиотеки экрана, на двух экранах съело 12% оперативки. Пришлось переписать в виде картинки, попутно убрав вывод текста с начальной заставки и внеся его в картинку заставки.
+
+1.07.1        25.04.2018
+  -добавлен мелкий шрифт, русифицированы меню;
+
 1.07          16.04.2018
-  -начато добавление русского языка в интерфейсе. Спасибо kaktuc за русский шрифт к библиотеке и arduinec за функцию перекодирования выводимого на дисплей текста.
-  -заменён дефайн "ADC" на "ADC_value", в новых версиях ArduinoIDE из-за этого возникала ошибка компилляции
+  -начато добавление русского языка в интерфейсе. Спасибо kaktuc за русский шрифт к библиотеке и arduinec за функцию перекодирования выводимого на дисплей текста;
+  -заменён дефайн "ADC" на "ADC_value", в новых версиях ArduinoIDE из-за этого возникала ошибка компилляции;
 
 1.064         15.04.2018
   -добавлена возможность использования ArduinoUNO или голого камня atmega328p в DIP корпусе. Для переключения раскомментировать #define UNO в начале скетча, это переключит чтение высокого напряжения с делителя с пина A6 на A5;
